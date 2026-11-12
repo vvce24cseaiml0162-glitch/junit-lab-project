@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MathUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JUnit-Lab-Project</a> &gt; <a href="index.source.html" class="el_package">com.lab.utilities</a> &gt; <span class="el_source">MathUtils.java</span></div><h1>MathUtils.java</h1><pre class="source lang-java linenums">package com.lab.utilities;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+public final class MathUtils {
+
+    private MathUtils() {
+        // Utility class
+    }
+
+    public static boolean isPrime(int n) {
+<span class="fc bfc" id="L13" title="All 2 branches covered.">        if (n &lt;= 1) {</span>
+<span class="fc" id="L14">            return false;</span>
+        }
+<span class="fc bfc" id="L16" title="All 2 branches covered.">        if (n &lt;= 3) {</span>
+<span class="fc" id="L17">            return true;</span>
+        }
+<span class="fc bfc" id="L19" title="All 4 branches covered.">        if (n % 2 == 0 || n % 3 == 0) {</span>
+<span class="fc" id="L20">            return false;</span>
+        }
+<span class="fc bfc" id="L22" title="All 2 branches covered.">        for (int i = 5; i * i &lt;= n; i += 6) {</span>
+<span class="fc bfc" id="L23" title="All 4 branches covered.">            if (n % i == 0 || n % (i + 2) == 0) {</span>
+<span class="fc" id="L24">                return false;</span>
+            }
+        }
+<span class="fc" id="L27">        return true;</span>
+    }
+
+    public static long factorial(int n) {
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        if (n &lt; 0) {</span>
+<span class="fc" id="L32">            throw new IllegalArgumentException(&quot;Factorial is not defined for negative numbers&quot;);</span>
+        }
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        if (n &gt; 20) {</span>
+<span class="nc" id="L35">            throw new IllegalArgumentException(&quot;Factorial overflow for long type (n &gt; 20)&quot;);</span>
+        }
+<span class="fc" id="L37">        long result = 1;</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        for (int i = 2; i &lt;= n; i++) {</span>
+<span class="fc" id="L39">            result *= i;</span>
+        }
+<span class="fc" id="L41">        return result;</span>
+    }
+
+    public static double calculatePercentage(double obtained, double total) {
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (total &lt;= 0) {</span>
+<span class="fc" id="L46">            throw new IllegalArgumentException(&quot;Total marks must be strictly greater than zero&quot;);</span>
+        }
+<span class="fc bfc" id="L48" title="All 4 branches covered.">        if (obtained &lt; 0 || obtained &gt; total) {</span>
+<span class="fc" id="L49">            throw new IllegalArgumentException(&quot;Obtained marks must be between 0 and total marks&quot;);</span>
+        }
+<span class="fc" id="L51">        return round((obtained / total) * 100.0, 2);</span>
+    }
+
+    public static double round(double value, int places) {
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">        if (places &lt; 0) {</span>
+<span class="nc" id="L56">            throw new IllegalArgumentException(&quot;Decimal places cannot be negative&quot;);</span>
+        }
+<span class="fc" id="L58">        BigDecimal bd = BigDecimal.valueOf(value);</span>
+<span class="fc" id="L59">        bd = bd.setScale(places, RoundingMode.HALF_UP);</span>
+<span class="fc" id="L60">        return bd.doubleValue();</span>
+    }
+
+    public static boolean isEven(int number) {
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        return number % 2 == 0;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

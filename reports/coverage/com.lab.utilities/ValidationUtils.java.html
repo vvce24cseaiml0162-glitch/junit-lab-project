@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValidationUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JUnit-Lab-Project</a> &gt; <a href="index.source.html" class="el_package">com.lab.utilities</a> &gt; <span class="el_source">ValidationUtils.java</span></div><h1>ValidationUtils.java</h1><pre class="source lang-java linenums">package com.lab.utilities;
+
+import java.util.regex.Pattern;
+
+public final class ValidationUtils {
+
+<span class="fc" id="L7">    private static final Pattern EMAIL_PATTERN = Pattern.compile(</span>
+            &quot;^[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$&quot;
+    );
+
+    // University USN Pattern: e.g., 4VV24CI001, 4VV21CS045
+<span class="fc" id="L12">    private static final Pattern USN_PATTERN = Pattern.compile(</span>
+            &quot;^4VV\\d{2}[A-Z]{2}\\d{3}$&quot;,
+            Pattern.CASE_INSENSITIVE
+    );
+
+    // 10-digit Indian Mobile number pattern starting with 6, 7, 8, or 9
+<span class="fc" id="L18">    private static final Pattern PHONE_PATTERN = Pattern.compile(</span>
+            &quot;^[6-9]\\d{9}$&quot;
+    );
+
+    // Strong password: min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special character
+<span class="fc" id="L23">    private static final Pattern STRONG_PASSWORD_PATTERN = Pattern.compile(</span>
+            &quot;^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&amp;])[A-Za-z\\d@$!%*?&amp;]{8,}$&quot;
+    );
+
+    private ValidationUtils() {
+        // Utility class
+    }
+
+    public static boolean isValidEmail(String email) {
+<span class="pc bpc" id="L32" title="1 of 4 branches missed.">        if (email == null || email.trim().isEmpty()) {</span>
+<span class="fc" id="L33">            return false;</span>
+        }
+<span class="fc" id="L35">        return EMAIL_PATTERN.matcher(email.trim()).matches();</span>
+    }
+
+    public static boolean isValidUSN(String usn) {
+<span class="pc bpc" id="L39" title="1 of 4 branches missed.">        if (usn == null || usn.trim().isEmpty()) {</span>
+<span class="fc" id="L40">            return false;</span>
+        }
+<span class="fc" id="L42">        return USN_PATTERN.matcher(usn.trim()).matches();</span>
+    }
+
+    public static boolean isValidPhone(String phone) {
+<span class="pc bpc" id="L46" title="1 of 4 branches missed.">        if (phone == null || phone.trim().isEmpty()) {</span>
+<span class="fc" id="L47">            return false;</span>
+        }
+<span class="fc" id="L49">        return PHONE_PATTERN.matcher(phone.trim()).matches();</span>
+    }
+
+    public static boolean isStrongPassword(String password) {
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (password == null) {</span>
+<span class="nc" id="L54">            return false;</span>
+        }
+<span class="fc" id="L56">        return STRONG_PASSWORD_PATTERN.matcher(password).matches();</span>
+    }
+
+    public static String sanitizeInput(String input) {
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        if (input == null) {</span>
+<span class="nc" id="L61">            return null;</span>
+        }
+<span class="fc" id="L63">        return input.trim().replaceAll(&quot;[&lt;&gt;\&quot;']&quot;, &quot;&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

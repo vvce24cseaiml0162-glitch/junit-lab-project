@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BankAccountService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JUnit-Lab-Project</a> &gt; <a href="index.source.html" class="el_package">com.lab.services</a> &gt; <span class="el_source">BankAccountService.java</span></div><h1>BankAccountService.java</h1><pre class="source lang-java linenums">package com.lab.services;
+
+import com.lab.exceptions.AccountLockedException;
+import com.lab.exceptions.InsufficientFundsException;
+import com.lab.exceptions.InvalidAmountException;
+import com.lab.models.BankAccount;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+
+<span class="fc" id="L12">public class BankAccountService {</span>
+
+<span class="fc" id="L14">    private final Map&lt;String, BankAccount&gt; accounts = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L15">    private final AtomicLong accountCounter = new AtomicLong(1000000000L);</span>
+    public static final double DAILY_WITHDRAWAL_LIMIT = 50000.0;
+    public static final double MINIMUM_INITIAL_DEPOSIT = 500.0;
+
+    public synchronized BankAccount createAccount(String holderName, double initialDeposit) {
+<span class="pc bpc" id="L20" title="1 of 4 branches missed.">        if (holderName == null || holderName.trim().length() &lt; 2) {</span>
+<span class="fc" id="L21">            throw new IllegalArgumentException(&quot;Account holder name must be at least 2 characters&quot;);</span>
+        }
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        if (initialDeposit &lt; MINIMUM_INITIAL_DEPOSIT) {</span>
+<span class="fc" id="L24">            throw new InvalidAmountException(&quot;Minimum initial deposit of INR &quot; + MINIMUM_INITIAL_DEPOSIT + &quot; required&quot;);</span>
+        }
+
+<span class="fc" id="L27">        String accountNumber = &quot;SB&quot; + accountCounter.incrementAndGet();</span>
+<span class="fc" id="L28">        BankAccount account = new BankAccount(accountNumber, holderName.trim(), initialDeposit);</span>
+<span class="fc" id="L29">        accounts.put(accountNumber, account);</span>
+<span class="fc" id="L30">        return account;</span>
+    }
+
+    public BankAccount getAccount(String accountNumber) {
+<span class="pc bpc" id="L34" title="2 of 4 branches missed.">        if (accountNumber == null || !accounts.containsKey(accountNumber)) {</span>
+<span class="nc" id="L35">            throw new IllegalArgumentException(&quot;Account &quot; + accountNumber + &quot; does not exist&quot;);</span>
+        }
+<span class="fc" id="L37">        return accounts.get(accountNumber);</span>
+    }
+
+    public synchronized double deposit(String accountNumber, double amount) {
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (amount &lt;= 0) {</span>
+<span class="fc" id="L42">            throw new InvalidAmountException(&quot;Deposit amount must be positive&quot;);</span>
+        }
+<span class="fc" id="L44">        BankAccount account = getAccount(accountNumber);</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (!account.isActive()) {</span>
+<span class="fc" id="L46">            throw new AccountLockedException(&quot;Cannot deposit to locked account: &quot; + accountNumber);</span>
+        }
+<span class="fc" id="L48">        account.credit(amount, &quot;Deposit&quot;);</span>
+<span class="fc" id="L49">        return account.getBalance();</span>
+    }
+
+    public synchronized double withdraw(String accountNumber, double amount) {
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (amount &lt;= 0) {</span>
+<span class="nc" id="L54">            throw new InvalidAmountException(&quot;Withdrawal amount must be positive&quot;);</span>
+        }
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (amount &gt; DAILY_WITHDRAWAL_LIMIT) {</span>
+<span class="fc" id="L57">            throw new InvalidAmountException(&quot;Withdrawal amount exceeds daily limit of INR &quot; + DAILY_WITHDRAWAL_LIMIT);</span>
+        }
+<span class="fc" id="L59">        BankAccount account = getAccount(accountNumber);</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (!account.isActive()) {</span>
+<span class="fc" id="L61">            throw new AccountLockedException(&quot;Cannot withdraw from locked account: &quot; + accountNumber);</span>
+        }
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (account.getBalance() &lt; amount) {</span>
+<span class="fc" id="L64">            throw new InsufficientFundsException(&quot;Insufficient balance. Available: &quot; + account.getBalance() + &quot;, Requested: &quot; + amount);</span>
+        }
+<span class="fc" id="L66">        account.debit(amount, &quot;Withdrawal&quot;);</span>
+<span class="fc" id="L67">        return account.getBalance();</span>
+    }
+
+    public synchronized boolean transfer(String fromAccountNum, String toAccountNum, double amount) {
+<span class="pc bpc" id="L71" title="2 of 6 branches missed.">        if (fromAccountNum == null || toAccountNum == null || fromAccountNum.equals(toAccountNum)) {</span>
+<span class="fc" id="L72">            throw new IllegalArgumentException(&quot;Source and destination accounts must be distinct&quot;);</span>
+        }
+<span class="fc" id="L74">        withdraw(fromAccountNum, amount);</span>
+<span class="fc" id="L75">        deposit(toAccountNum, amount);</span>
+<span class="fc" id="L76">        return true;</span>
+    }
+
+    public void lockAccount(String accountNumber) {
+<span class="fc" id="L80">        BankAccount account = getAccount(accountNumber);</span>
+<span class="fc" id="L81">        account.setActive(false);</span>
+<span class="fc" id="L82">    }</span>
+
+    public void unlockAccount(String accountNumber) {
+<span class="nc" id="L85">        BankAccount account = getAccount(accountNumber);</span>
+<span class="nc" id="L86">        account.setActive(true);</span>
+<span class="nc" id="L87">    }</span>
+
+    public void clearAll() {
+<span class="fc" id="L90">        accounts.clear();</span>
+<span class="fc" id="L91">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

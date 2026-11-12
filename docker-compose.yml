@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  junit-lab-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: junit-lab-container
+    volumes:
+      - ./reports:/app/reports
+    environment:
+      - CI=true
+    restart: "no"

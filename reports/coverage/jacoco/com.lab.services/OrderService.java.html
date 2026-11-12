@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OrderService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JUnit-Lab-Project</a> &gt; <a href="index.source.html" class="el_package">com.lab.services</a> &gt; <span class="el_source">OrderService.java</span></div><h1>OrderService.java</h1><pre class="source lang-java linenums">package com.lab.services;
+
+import com.lab.exceptions.InvalidDiscountCodeException;
+import com.lab.exceptions.OrderProcessingException;
+import com.lab.models.Order;
+import com.lab.models.OrderItem;
+import com.lab.utilities.MathUtils;
+import com.lab.utilities.ValidationUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
+<span class="fc" id="L13">public class OrderService {</span>
+
+<span class="fc" id="L15">    private final Map&lt;String, Order&gt; orders = new HashMap&lt;&gt;();</span>
+
+    public Order createOrder(String orderId, String customerEmail) {
+<span class="pc bpc" id="L18" title="1 of 2 branches missed.">        if (!ValidationUtils.isValidEmail(customerEmail)) {</span>
+<span class="nc" id="L19">            throw new OrderProcessingException(&quot;Invalid customer email: &quot; + customerEmail);</span>
+        }
+<span class="pc bpc" id="L21" title="1 of 2 branches missed.">        if (orders.containsKey(orderId)) {</span>
+<span class="nc" id="L22">            throw new OrderProcessingException(&quot;Order with ID &quot; + orderId + &quot; already exists&quot;);</span>
+        }
+<span class="fc" id="L24">        Order order = new Order(orderId, customerEmail);</span>
+<span class="fc" id="L25">        orders.put(orderId, order);</span>
+<span class="fc" id="L26">        return order;</span>
+    }
+
+    public Order getOrder(String orderId) {
+<span class="pc bpc" id="L30" title="2 of 4 branches missed.">        if (orderId == null || !orders.containsKey(orderId)) {</span>
+<span class="nc" id="L31">            throw new OrderProcessingException(&quot;Order not found: &quot; + orderId);</span>
+        }
+<span class="fc" id="L33">        return orders.get(orderId);</span>
+    }
+
+    public void addItemToOrder(String orderId, OrderItem item) {
+<span class="fc" id="L37">        Order order = getOrder(orderId);</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (order.getStatus() == Order.Status.COMPLETED) {</span>
+<span class="fc" id="L39">            throw new OrderProcessingException(&quot;Cannot add items to completed order&quot;);</span>
+        }
+<span class="fc" id="L41">        order.addItem(item);</span>
+<span class="fc" id="L42">    }</span>
+
+    public double applyDiscount(String orderId, String discountCode) {
+<span class="fc" id="L45">        Order order = getOrder(orderId);</span>
+<span class="fc" id="L46">        double subtotal = order.calculateSubtotal();</span>
+
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        if (subtotal &lt;= 0) {</span>
+<span class="nc" id="L49">            throw new OrderProcessingException(&quot;Cannot apply discount code to empty order&quot;);</span>
+        }
+<span class="pc bpc" id="L51" title="2 of 4 branches missed.">        if (discountCode == null || discountCode.trim().isEmpty()) {</span>
+<span class="nc" id="L52">            throw new InvalidDiscountCodeException(&quot;Discount code cannot be empty&quot;);</span>
+        }
+
+<span class="fc" id="L55">        String code = discountCode.trim().toUpperCase();</span>
+<span class="fc" id="L56">        double discount = 0.0;</span>
+
+<span class="fc bfc" id="L58" title="All 4 branches covered.">        switch (code) {</span>
+            case &quot;STUDENT10&quot;:
+<span class="fc" id="L60">                discount = subtotal * 0.10;</span>
+<span class="fc" id="L61">                break;</span>
+            case &quot;FLAT50&quot;:
+<span class="fc bfc" id="L63" title="All 2 branches covered.">                if (subtotal &lt; 100.0) {</span>
+<span class="fc" id="L64">                    throw new InvalidDiscountCodeException(&quot;FLAT50 requires a minimum order subtotal of 100&quot;);</span>
+                }
+<span class="fc" id="L66">                discount = 50.0;</span>
+<span class="fc" id="L67">                break;</span>
+            case &quot;FESTIVE25&quot;:
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">                if (subtotal &lt; 500.0) {</span>
+<span class="nc" id="L70">                    throw new InvalidDiscountCodeException(&quot;FESTIVE25 requires a minimum order subtotal of 500&quot;);</span>
+                }
+<span class="fc" id="L72">                discount = subtotal * 0.25;</span>
+<span class="fc" id="L73">                break;</span>
+            default:
+<span class="fc" id="L75">                throw new InvalidDiscountCodeException(&quot;Invalid discount coupon code: &quot; + discountCode);</span>
+        }
+
+<span class="fc" id="L78">        order.setDiscountCode(code);</span>
+<span class="fc" id="L79">        order.setDiscountAmount(MathUtils.round(discount, 2));</span>
+<span class="fc" id="L80">        order.setStatus(Order.Status.DISCOUNT_APPLIED);</span>
+<span class="fc" id="L81">        return order.getDiscountAmount();</span>
+    }
+
+    public double calculateFinalTotal(String orderId, double taxPercentage) {
+<span class="fc" id="L85">        Order order = getOrder(orderId);</span>
+<span class="fc" id="L86">        double subtotal = order.calculateSubtotal();</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        if (subtotal &lt;= 0) {</span>
+<span class="nc" id="L88">            throw new OrderProcessingException(&quot;Cannot calculate total for empty order&quot;);</span>
+        }
+<span class="pc bpc" id="L90" title="2 of 4 branches missed.">        if (taxPercentage &lt; 0 || taxPercentage &gt; 50) {</span>
+<span class="nc" id="L91">            throw new IllegalArgumentException(&quot;Tax percentage must be between 0 and 50%&quot;);</span>
+        }
+
+<span class="fc" id="L94">        double discountedSubtotal = subtotal - order.getDiscountAmount();</span>
+<span class="fc" id="L95">        double taxAmount = discountedSubtotal * (taxPercentage / 100.0);</span>
+<span class="fc" id="L96">        return MathUtils.round(discountedSubtotal + taxAmount, 2);</span>
+    }
+
+    public boolean checkout(String orderId) {
+<span class="fc" id="L100">        Order order = getOrder(orderId);</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        if (order.getItems().isEmpty()) {</span>
+<span class="nc" id="L102">            throw new OrderProcessingException(&quot;Cannot checkout order with zero items&quot;);</span>
+        }
+<span class="fc" id="L104">        order.setStatus(Order.Status.COMPLETED);</span>
+<span class="fc" id="L105">        return true;</span>
+    }
+
+    public void clearAll() {
+<span class="fc" id="L109">        orders.clear();</span>
+<span class="fc" id="L110">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

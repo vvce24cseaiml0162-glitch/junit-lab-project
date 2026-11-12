@@ -1,0 +1,30 @@
+===============================================================
+     END-TO-END JUNIT LAB PROJECT DEMONSTRATION & EXECUTION    
+===============================================================
+
+[1] Demonstrating Student Management & USN Generation:
+   Registered Student: Pruthvik V
+   Auto-generated USN: 4VV24CI001
+   Average Score: 91.5%
+   Assigned Grade: S
+   Calculated CGPA: 9.63
+
+[2] Demonstrating Banking Transaction Service:
+   Created Account 1: SB1000000001 | Balance: INR 10000.0
+   Created Account 2: SB1000000002 | Balance: INR 5000.0
+   Post Transfer Balance [Acc1]: INR 11000.0
+   Post Transfer Balance [Acc2]: INR 6500.0
+
+[3] Demonstrating Order Processing & Billing Service:
+   Order ORD-2026-001 Discount Applied: INR 135.0
+   Order Final Total with 18% GST: INR 1433.7
+
+[4] Demonstrating Validation & Math Utilities:
+   Validating USN '4VV24CI001': true
+   Validating Email 'test@vvce.ac.in': true
+   Is 97 prime? true
+   Factorial of 5: 120
+
+===============================================================
+        APPLICATION INITIALIZED & READY FOR JUNIT SUITE        
+===============================================================

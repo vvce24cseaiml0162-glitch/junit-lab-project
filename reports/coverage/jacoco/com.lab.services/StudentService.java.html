@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StudentService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JUnit-Lab-Project</a> &gt; <a href="index.source.html" class="el_package">com.lab.services</a> &gt; <span class="el_source">StudentService.java</span></div><h1>StudentService.java</h1><pre class="source lang-java linenums">package com.lab.services;
+
+import com.lab.exceptions.DuplicateStudentException;
+import com.lab.exceptions.InvalidStudentDataException;
+import com.lab.exceptions.StudentNotFoundException;
+import com.lab.models.Student;
+import com.lab.utilities.MathUtils;
+import com.lab.utilities.ValidationUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+<span class="fc" id="L17">public class StudentService {</span>
+
+<span class="fc" id="L19">    private final Map&lt;String, Student&gt; studentDatabase = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L20">    private final Map&lt;String, AtomicInteger&gt; departmentCounters = new HashMap&lt;&gt;();</span>
+
+    public synchronized String generateNextUsn(String department, int year) {
+<span class="pc bpc" id="L23" title="2 of 4 branches missed.">        if (department == null || department.trim().isEmpty()) {</span>
+<span class="nc" id="L24">            throw new InvalidStudentDataException(&quot;Department code cannot be empty&quot;);</span>
+        }
+<span class="fc" id="L26">        String dept = department.trim().toUpperCase();</span>
+<span class="fc" id="L27">        departmentCounters.putIfAbsent(dept, new AtomicInteger(0));</span>
+<span class="fc" id="L28">        int count = departmentCounters.get(dept).incrementAndGet();</span>
+<span class="fc" id="L29">        return String.format(&quot;4VV%02d%s%03d&quot;, year % 100, dept, count);</span>
+    }
+
+    public synchronized Student registerStudent(String name, String email, String phone, String department) {
+<span class="pc bpc" id="L33" title="2 of 4 branches missed.">        if (name == null || name.trim().length() &lt; 2) {</span>
+<span class="nc" id="L34">            throw new InvalidStudentDataException(&quot;Student name must be at least 2 characters&quot;);</span>
+        }
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        if (!ValidationUtils.isValidEmail(email)) {</span>
+<span class="fc" id="L37">            throw new InvalidStudentDataException(&quot;Invalid student email address: &quot; + email);</span>
+        }
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (!ValidationUtils.isValidPhone(phone)) {</span>
+<span class="fc" id="L40">            throw new InvalidStudentDataException(&quot;Invalid student phone number: &quot; + phone);</span>
+        }
+
+        // Check duplicate email
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        for (Student s : studentDatabase.values()) {</span>
+<span class="fc bfc" id="L45" title="All 2 branches covered.">            if (s.getEmail().equalsIgnoreCase(email.trim())) {</span>
+<span class="fc" id="L46">                throw new DuplicateStudentException(&quot;A student with email &quot; + email + &quot; already exists&quot;);</span>
+            }
+<span class="fc" id="L48">        }</span>
+
+<span class="fc" id="L50">        String usn = generateNextUsn(department, 24);</span>
+<span class="fc" id="L51">        Student student = new Student(usn, name.trim(), email.trim(), phone.trim(), department.trim().toUpperCase());</span>
+<span class="fc" id="L52">        studentDatabase.put(usn, student);</span>
+<span class="fc" id="L53">        return student;</span>
+    }
+
+    public Student getStudent(String usn) {
+<span class="pc bpc" id="L57" title="1 of 4 branches missed.">        if (usn == null || !studentDatabase.containsKey(usn.toUpperCase())) {</span>
+<span class="fc" id="L58">            throw new StudentNotFoundException(&quot;Student with USN &quot; + usn + &quot; not found&quot;);</span>
+        }
+<span class="fc" id="L60">        return studentDatabase.get(usn.toUpperCase());</span>
+    }
+
+    public List&lt;Student&gt; getAllStudents() {
+<span class="nc" id="L64">        return Collections.unmodifiableList(new ArrayList&lt;&gt;(studentDatabase.values()));</span>
+    }
+
+    public Student updateStudent(String usn, String newName, String newPhone) {
+<span class="fc" id="L68">        Student student = getStudent(usn);</span>
+<span class="pc bpc" id="L69" title="2 of 4 branches missed.">        if (newName != null &amp;&amp; !newName.trim().isEmpty()) {</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">            if (newName.trim().length() &lt; 2) {</span>
+<span class="nc" id="L71">                throw new InvalidStudentDataException(&quot;Student name must be at least 2 characters&quot;);</span>
+            }
+<span class="fc" id="L73">            student.setName(newName.trim());</span>
+        }
+<span class="pc bpc" id="L75" title="2 of 4 branches missed.">        if (newPhone != null &amp;&amp; !newPhone.trim().isEmpty()) {</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">            if (!ValidationUtils.isValidPhone(newPhone)) {</span>
+<span class="nc" id="L77">                throw new InvalidStudentDataException(&quot;Invalid phone number format: &quot; + newPhone);</span>
+            }
+<span class="fc" id="L79">            student.setPhone(newPhone.trim());</span>
+        }
+<span class="fc" id="L81">        return student;</span>
+    }
+
+    public boolean deleteStudent(String usn) {
+<span class="fc" id="L85">        Student student = getStudent(usn);</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        return studentDatabase.remove(student.getUsn()) != null;</span>
+    }
+
+    public void recordMarks(String usn, String subject, double marks) {
+<span class="fc" id="L90">        Student student = getStudent(usn);</span>
+<span class="fc" id="L91">        student.addMarks(subject, marks);</span>
+<span class="fc" id="L92">    }</span>
+
+    public char assignGrade(double percentage) {
+<span class="pc bpc" id="L95" title="2 of 4 branches missed.">        if (percentage &lt; 0 || percentage &gt; 100) {</span>
+<span class="nc" id="L96">            throw new IllegalArgumentException(&quot;Percentage must be between 0 and 100&quot;);</span>
+        }
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        if (percentage &gt;= 90) return 'S';</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (percentage &gt;= 80) return 'A';</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        if (percentage &gt;= 70) return 'B';</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (percentage &gt;= 60) return 'C';</span>
+<span class="fc bfc" id="L102" title="All 2 branches covered.">        if (percentage &gt;= 50) return 'D';</span>
+<span class="fc bfc" id="L103" title="All 2 branches covered.">        if (percentage &gt;= 40) return 'E';</span>
+<span class="fc" id="L104">        return 'F';</span>
+    }
+
+    public double calculateCgpa(String usn) {
+<span class="fc" id="L108">        Student student = getStudent(usn);</span>
+<span class="fc" id="L109">        double avg = student.calculateAverageMarks();</span>
+<span class="fc" id="L110">        return MathUtils.round(avg / 9.5, 2);</span>
+    }
+
+    public void clearAll() {
+<span class="fc" id="L114">        studentDatabase.clear();</span>
+<span class="fc" id="L115">        departmentCounters.clear();</span>
+<span class="fc" id="L116">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

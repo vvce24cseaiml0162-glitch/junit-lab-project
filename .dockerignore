@@ -1,0 +1,8 @@
+.git
+.github
+target/
+reports/
+*.log
+.idea/
+*.iml
+.vscode/

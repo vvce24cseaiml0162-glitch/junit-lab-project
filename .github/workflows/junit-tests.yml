@@ -1,0 +1,77 @@
+name: End-to-End JUnit Lab CI/CD & Docker Verification
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  junit-test-execution:
+    name: Run JUnit 5 Tests & JaCoCo Coverage (Ubuntu Runner)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (Temurin OpenJDK)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Compile and Execute JUnit 5 Suite
+        run: |
+          mvn clean test jacoco:report -B
+
+      - name: Upload Surefire Test Execution Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: surefire-junit-reports
+          path: target/surefire-reports/
+          retention-days: 14
+
+      - name: Upload JaCoCo HTML Code Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-coverage-report
+          path: target/site/jacoco/
+          retention-days: 14
+
+  docker-container-execution:
+    name: Build & Run JUnit Test Suite in Docker Container
+    runs-on: ubuntu-latest
+    needs: junit-test-execution
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t junit-lab-project:latest .
+
+      - name: Run Tests inside Docker Container
+        run: |
+          mkdir -p host-reports
+          docker run --rm -v $(pwd)/host-reports:/app/reports junit-lab-project:latest
+
+      - name: Upload Containerized Test Reports Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: docker-container-reports
+          path: host-reports/
+          retention-days: 14
